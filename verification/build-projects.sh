@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Napsala AI (Codex) pro rychlejší odhalování chyb sestavení.
 set -euo pipefail
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

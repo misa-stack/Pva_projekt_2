@@ -1,3 +1,6 @@
+// Napsala AI (Codex) pro rychlejší hledání chyb; nenahrazuje ruční přezkoušení týmem.
+using System.Globalization;
+using System.Text;
 using projekt_pva_2;
 
 int checks = 0;
@@ -22,7 +25,37 @@ void Finish(TournamentService service)
         service.SetResult(match.Id, MatchResult.Draw);
     service.CloseRound();
 }
-string Snapshot(TournamentService service) => System.Text.Json.JsonSerializer.Serialize(service.State);
+string Snapshot(TournamentService service) => SnapshotState(service.State);
+// Nezávislý otisk hodnot pro porovnání před/po operaci, bez JSON/XML a bez ukládání.
+string SnapshotState(TournamentState state)
+{
+    var result = new StringBuilder();
+    void Add(object? value)
+    {
+        if (value is null) { result.Append("null;"); return; }
+        string text = Convert.ToString(value, CultureInfo.InvariantCulture)!;
+        result.Append(text.Length).Append(':').Append(text).Append(';');
+    }
+    Add(state.Players.Count);
+    foreach (var player in state.Players) { Add(player.Name); Add(player.Nickname); }
+    Add(state.Tournaments.Count);
+    foreach (var tournament in state.Tournaments)
+    {
+        Add(tournament.Id); Add(tournament.Name); Add(tournament.Discipline); Add(tournament.NumberOfRounds);
+        Add(tournament.Participants.Count);
+        foreach (string nickname in tournament.Participants) Add(nickname);
+        Add(tournament.Rounds.Count);
+        foreach (var round in tournament.Rounds)
+        {
+            Add(round.Number); Add(round.IsClosed); Add(round.ByeNickname); Add(round.Matches.Count);
+            foreach (var match in round.Matches)
+            {
+                Add(match.Id); Add(match.FirstNickname); Add(match.SecondNickname); Add((int)match.Result);
+            }
+        }
+    }
+    return result.ToString();
+}
 
 var players = new TournamentService();
 players.AddPlayer(" Alice ", " AL ");
@@ -205,9 +238,9 @@ InvalidStarted(t => t.Rounds[0].Matches[0].FirstNickname = "P0", "nesprávný ro
 InvalidStarted(t => t.Rounds[0].Matches[0].FirstNickname = "P2", "zápas sám se sebou");
 InvalidStarted(t => t.Rounds.Add(t.Rounds[0]), "opakované otevřené kolo");
 var valid = scoring.State;
-string validBefore = System.Text.Json.JsonSerializer.Serialize(valid);
+string validBefore = SnapshotState(valid);
 TournamentService.Validate(valid);
-Check(System.Text.Json.JsonSerializer.Serialize(valid) == validBefore, "Validate nemění vstup.");
+Check(SnapshotState(valid) == validBefore, "Validate nemění vstup.");
 // Rovnost bodů s různou silou soupeřů, odvozená ručně z uvedených zápasů.
 tie.SetResult(4, MatchResult.FirstWin);
 table = tie.GetStandings();
