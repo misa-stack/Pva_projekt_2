@@ -1,3 +1,4 @@
+// Napsala AI (Codex) pro rychlejší hledání chyb; nenahrazuje ruční přezkoušení týmem.
 using projekt_pva_2;
 
 var root = Path.Combine(Path.GetTempPath(), "pva-integration-" + Guid.NewGuid().ToString("N"));
@@ -117,6 +118,29 @@ try
         new TournamentConsole(path, new StringReader(alternative + "\n0\n"), output).Run();
         Equal("corrupt save", File.ReadAllText(path));
         Equal(0, new TournamentStore(alternative).Load().Players.Count);
+    });
+    Run("Specific exception types explain rejected operations", () =>
+    {
+        var service = new TournamentService();
+        Throws<ArgumentException>(() => service.AddPlayer(" ", "anna"));
+        service.AddPlayer("Anna", "anna");
+        Throws<InvalidOperationException>(() => service.AddPlayer("Jiná Anna", "ANNA"));
+        Throws<ArgumentException>(() => service.RemovePlayer("missing"));
+        service.AddPlayer("Boris", "boris");
+        service.CreateTournament("Test", "Šachy", 1);
+        service.RegisterPlayer("anna");
+        service.RegisterPlayer("boris");
+        service.StartRound();
+        Throws<ArgumentException>(() => service.SetResult(999, MatchResult.Draw));
+        Throws<InvalidOperationException>(() => service.CloseRound());
+        var path = Path.Combine(root, "exceptions.pva");
+        var file = new FileSystem(path);
+        Throws<KeyNotFoundException>(() => file.Get("missing"));
+        Throws<ArgumentNullException>(() => file.Set("key", null!));
+        File.WriteAllText(path, "PVA|2|changed-schema\n");
+        Throws<NotSupportedException>(() => new FileSystem(path));
+        File.WriteAllText(path, "broken");
+        Throws<InvalidDataException>(() => new FileSystem(path));
     });
     Console.WriteLine($"{passed} integration checks passed.");
     return 0;
