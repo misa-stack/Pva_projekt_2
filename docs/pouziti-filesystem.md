@@ -72,6 +72,22 @@ soubor.ReplaceAll(zaznamy);
 
 To se hodí pro část aplikace, která převádí vlastní objekty na textové položky a potřebuje uložit jeden celý stav. Při neplatném vstupu se žádná část náhrady neuloží. Prázdný slovník přes `ReplaceAll` je platná úplná náhrada.
 
+Pokud se stejným souborem pracuje více otevřených instancí aplikace, předejte jako druhý, nepovinný argument také původní načtený stav:
+
+```csharp
+Dictionary<string, string[]> puvodni = soubor.ReadAll();
+var upravene = puvodni.ToDictionary(zaznam => zaznam.Key, zaznam => zaznam.Value.ToArray());
+upravene["kontakt"] = ["Eva", "eva@example.cz"];
+
+soubor.ReplaceAll(upravene, puvodni);
+// Až po úspěšném uložení se nový stav stává výchozím pro další změny:
+puvodni = upravene;
+```
+
+`ReplaceAll` zkontroluje aktuální soubor a očekávaný původní stav pod stejným zámkem, který chrání zápis. Musí souhlasit všechny klíče, počty položek i texty v jejich původním pořadí; pořadí klíčů ve slovníku nehraje roli. Porovnání rozlišuje velikost písmen. Pokud jiná instance mezitím data změnila, metoda vyvolá `IOException` a neprovede zápis ani otočení zálohy. Potom je nutné načíst aktuální stav a změnu nad ním znovu vyhodnotit.
+
+Původní stav si uchovávejte jako samostatnou kopii a během úprav ho neměňte. Prázdný očekávaný slovník znamená, že aktuální úložiště musí být prázdné. Vynechaný druhý argument nebo `null` znamená nahrazení bez kontroly souběžné změny. Oba předané slovníky se před operací validují a kopírují.
+
 Úložiště umí pouze text. Čísla či datum převádějte a ověřujte v aplikaci. U čísel použijte stejnou kulturu při zápisu i čtení:
 
 ```csharp
@@ -121,7 +137,7 @@ Nesouhlasící počty, duplicitní klíče, neznámé značky nebo escape sekven
 
 Každá operace s daty získá výhradní zámek a znovu přečte aktuální soubor. Dvě instance tak při postupných změnách přes `Set` nebo `Remove` nepřepisují zastaralou kopii. Když zámek právě drží jiná operace, třída nečeká a vyvolá `IOException`; volající může operaci zopakovat později. Samotná existence souboru `.lock` neznamená, že je zámek držený. Nemažte jej kvůli odemykání.
 
-`ReadAll` a následné `ReplaceAll` jsou dvě samostatné operace. `ReplaceAll` atomicky ukládá celý předaný stav, ale neslučuje jej s mezitím provedenými změnami jiné instance. O společné úpravy celého stavu se musí postarat volající aplikace.
+`ReadAll` a následné `ReplaceAll` jsou dvě samostatné operace. `ReplaceAll` atomicky ukládá celý předaný stav a neslučuje jej se změnami jiné instance. Pro ochranu před přepsáním mezitím změněných dat použijte druhý argument s původním stavem, jak ukazuje příklad výše.
 
 Nový obsah se nejprve celý připraví a zapíše do dočasného souboru. `Flush(true)` požádá o jeho zápis na disk; teprve potom se nahradí hlavní soubor a předchozí stav se stane zálohou. Chyba validace, převodu textu nebo nahrazení souboru nesmí být považována za úspěšné uložení.
 
@@ -145,7 +161,7 @@ Příznak zůstává `true`, pokud během používání této instance proběhla
 | `System.Text.EncoderFallbackException` | Předaný řetězec obsahuje neplatnou posloupnost UTF-16 a nelze jej zapsat jako UTF-8. |
 | `FileNotFoundException` | Za běhu zmizel hlavní soubor i záloha. |
 | `UnauthorizedAccessException` | Chybí potřebná oprávnění. |
-| `IOException` | Problém se souborem nebo kolize zámku. |
+| `IOException` | Problém se souborem, kolize zámku nebo nesouhlas očekávaného stavu při podmíněném `ReplaceAll`. |
 
 Výjimky zachyťte na vhodném místě aplikace a zobrazte srozumitelnou zprávu. Po chybě zápisu nepovažujte změny v objektech aplikace za uložené.
 

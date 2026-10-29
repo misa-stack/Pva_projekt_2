@@ -73,6 +73,72 @@ try
         Sequence(["new", "zero"], store.Keys.Order().ToArray());
         Sequence(["one", "two"], new FileSystem(path).Get("new"));
     });
+    Check("conditional ReplaceAll rejects stale independent snapshot without writes", path =>
+    {
+        var first = new FileSystem(path);
+        var second = new FileSystem(path);
+        first.Set("a", "original");
+        var firstBaseline = first.ReadAll();
+        var secondBaseline = second.ReadAll();
+        first.ReplaceAll(new Dictionary<string, string[]> { ["a"] = ["first update"] }, firstBaseline);
+        string main = File.ReadAllText(path);
+        string backup = File.ReadAllText(path + ".bak");
+        Throws<IOException>(() => second.ReplaceAll(
+            new Dictionary<string, string[]> { ["a"] = ["stale update"] }, secondBaseline));
+        Preserved(path, main, backup);
+        Sequence(["first update"], second.Get("a"));
+    });
+    Check("conditional ReplaceAll accepts equal snapshots in different key order", path =>
+    {
+        var store = new FileSystem(path);
+        store.Set("a", "one", "two");
+        store.Set("b");
+        var baseline = new Dictionary<string, string[]> { ["b"] = [], ["a"] = ["one", "two"] };
+        string previous = File.ReadAllText(path);
+        store.ReplaceAll(new Dictionary<string, string[]> { ["new"] = ["saved"] }, baseline);
+        Sequence(["saved"], new FileSystem(path).Get("new"));
+        Equal(previous, File.ReadAllText(path + ".bak"));
+    });
+    Check("conditional ReplaceAll compares empty expected snapshot", path =>
+    {
+        var store = new FileSystem(path);
+        var empty = new Dictionary<string, string[]>();
+        store.ReplaceAll(new Dictionary<string, string[]> { ["a"] = ["one"] }, empty);
+        string main = File.ReadAllText(path);
+        string backup = File.ReadAllText(path + ".bak");
+        Throws<IOException>(() => store.ReplaceAll(empty, empty));
+        Preserved(path, main, backup);
+    });
+    Check("conditional ReplaceAll compares keys and arrays ordinally", path =>
+    {
+        var store = new FileSystem(path);
+        store.Set("a", "Value", "second");
+        string main = File.ReadAllText(path);
+        string backup = File.ReadAllText(path + ".bak");
+        Dictionary<string, string[]>[] mismatches =
+        [
+            new(StringComparer.OrdinalIgnoreCase) { ["A"] = ["Value", "second"] },
+            new() { ["a"] = ["value", "second"] },
+            new() { ["a"] = ["Value"] },
+            new() { ["a"] = ["second", "Value"] },
+            new() { ["a"] = ["Value", "second"], ["extra"] = [] }
+        ];
+        foreach (var baseline in mismatches)
+            Throws<IOException>(() => store.ReplaceAll(new Dictionary<string, string[]>(), baseline));
+        Preserved(path, main, backup);
+    });
+    Check("conditional ReplaceAll validates expected snapshot before writes", path =>
+    {
+        var store = new FileSystem(path);
+        store.Set("a", "saved");
+        string main = File.ReadAllText(path);
+        string backup = File.ReadAllText(path + ".bak");
+        var replacement = new Dictionary<string, string[]> { ["new"] = ["data"] };
+        Throws<ArgumentException>(() => store.ReplaceAll(replacement, new Dictionary<string, string[]> { [" "] = [] }));
+        Throws<ArgumentException>(() => store.ReplaceAll(replacement, new Dictionary<string, string[]> { ["a"] = null! }));
+        Throws<ArgumentException>(() => store.ReplaceAll(replacement, new Dictionary<string, string[]> { ["a"] = [null!] }));
+        Preserved(path, main, backup);
+    });
     Check("no-op remove and clear preserve backup", path =>
     {
         var store = new FileSystem(path);
