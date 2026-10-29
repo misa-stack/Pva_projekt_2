@@ -1,5 +1,7 @@
 # Ověření a předání týmu
 
+**Ověřovací programy a skripty ve složce `verification/` napsala AI (Codex), abychom mohli rychleji hledat chyby a znovu kontrolovat opravy.** Nejde o ruční testy provedené spolužáky ani o důkaz jejich odpracovaného času. Výsledky automatických kontrol doplňuje osobní vyzkoušení jiným členem týmu.
+
 ## Opakování automatických kontrol
 
 Z hlavní složky repozitáře spusťte:
@@ -14,7 +16,7 @@ Skript sestaví hlavní i samostatný UI projekt v obou pořadích a spustí tř
 | --- | --- |
 | `verification/StorageChecks` | 50 kontrol vlastního formátu, znaků, duplicit, poškození, verzí, záloh, chyb zápisu a konfliktů snímků. |
 | `verification/TournamentChecks` | 2 113 tvrzení o pravidlech, historii, izolaci stavu, ukládání a úplných rozpisech pro 2 až 15 účastníků. |
-| `verification/IntegrationChecks` | 9 scénářů ukládání a pokračování uprostřed kola, vstupů, menu, chyb souboru a souběžných instancí. |
+| `verification/IntegrationChecks` | 10 scénářů ukládání a pokračování uprostřed kola, vstupů, menu, konkrétních výjimek, chyb souboru a souběžných instancí. |
 
 Původní soubor `UI/UI.cs` obsahuje upozornění nullable `CS8625`. Jeho zdroj se při převzetí zachoval; upozornění nebrání sestavení. Kontroly a technické AI review nenahrazují přezkoušení jiným členem týmu.
 
@@ -45,7 +47,7 @@ Tyto kontroly jsou přímo v `verification/TournamentChecks/Program.cs`; nejde p
 
 ## Co musí tým dokončit před odevzdáním
 
-Zadání vyhrazuje návrh specifikace a architektury týmu bez AI. `SPECIFIKACE.md` a `NAVRH.md` proto v této implementaci nejsou vydávány za vlastní návrh studentů. Tým je musí sám zpracovat, ověřit soulad s kódem a umět rozhodnutí vysvětlit a upravit.
+Tým musí před odevzdáním projít `SPECIFIKACE.md` a `NAVRH.md`, potvrdit jejich soulad s požadavky a kódem a umět popsaná pravidla vysvětlit a upravit. Samotná přítomnost dokumentů nenahrazuje týmovou kontrolu.
 
 Původní autorství zachovává Git historie. UI vytvořil účet `A2kio` (Frederik Křížek); nové implementační commity používají aktuálně nastavený Git účet Michala. Práci Serafima ani jeho čas tato relace nedoplňuje za něj.
 

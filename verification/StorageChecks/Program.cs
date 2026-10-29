@@ -1,3 +1,4 @@
+// Napsala AI (Codex) pro rychlejší hledání chyb; nenahrazuje ruční přezkoušení týmem.
 using System.Text;
 using projekt_pva_2;
 
