@@ -5,6 +5,7 @@ class Program
 {
     static void Main(string[] args)
     {
+        if (projekt_pva_2.Launcher.TryRunText(args)) return;
         MenuFunctions menu = new MenuFunctions();
         string prompt = @"
 ████████╗██╗███╗   ██╗██████╗ ███████╗██████╗ 
@@ -20,7 +21,7 @@ class Program
         switch (index)
         {
             case 0:
-
+                menu.start();
                 break;
             case 1:
                 menu.Controls();
@@ -35,7 +36,7 @@ class MenuFunctions
 {   
     public void start()
     {
-        
+        new projekt_pva_2.TournamentConsole(projekt_pva_2.Launcher.SavePath).Run();
     }
     public void Controls()
     {
