@@ -88,19 +88,38 @@ public sealed class FileSystem
         return Load();
     }
 
-    public void ReplaceAll(IReadOnlyDictionary<string, string[]> records)
+    public void ReplaceAll(IReadOnlyDictionary<string, string[]> records,
+        IReadOnlyDictionary<string, string[]>? expectedRecords = null)
     {
         ArgumentNullException.ThrowIfNull(records);
-        var copy = new Dictionary<string, string[]>();
+        var copy = CopyRecords(records);
+        var expected = expectedRecords is null ? null : CopyRecords(expectedRecords);
+
+        using var fileLock = Lock();
+        var current = Load(); // Ani úplné nahrazení nesmí přepsat neplatný nebo novější soubor.
+        if (expected is not null)
+        {
+            if (current.Count != expected.Count)
+                throw new IOException("Data mezitím změnila jiná operace. Načtěte aktuální stav.");
+            foreach (var record in expected)
+            {
+                if (!current.TryGetValue(record.Key, out var fields)
+                    || !fields.SequenceEqual(record.Value, StringComparer.Ordinal))
+                    throw new IOException("Data mezitím změnila jiná operace. Načtěte aktuální stav.");
+            }
+        }
+        Save(copy);
+    }
+
+    private static Dictionary<string, string[]> CopyRecords(IReadOnlyDictionary<string, string[]> records)
+    {
+        var copy = new Dictionary<string, string[]>(StringComparer.Ordinal);
         foreach (var record in records)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(record.Key);
             copy.Add(record.Key, CopyFields(record.Value));
         }
-
-        using var fileLock = Lock();
-        Load(); // Ani úplné nahrazení nesmí přepsat neplatný nebo novější soubor.
-        Save(copy);
+        return copy;
     }
 
     private static string[] CopyFields(string[] fields)
