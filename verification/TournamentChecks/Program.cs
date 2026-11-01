@@ -59,7 +59,7 @@ string SnapshotState(TournamentState state)
 
 var players = new TournamentService();
 players.AddPlayer(" Alice ", " AL ");
-Check(players.State.Players[0] == new Player("Alice", "AL"), "Vstupy se oříznou.");
+Check(players.State.Players[0] == new projekt_pva_2.Player("Alice", "AL"), "Vstupy se oříznou.");
 Reject(() => players.AddPlayer("Other", "al"), "duplicita bez ohledu na velikost písmen");
 Reject(() => players.AddPlayer(" ", "B"), "prázdné jméno");
 Reject(() => players.AddPlayer("B", " "), "prázdná přezdívka");
@@ -204,9 +204,9 @@ void Invalid(Action<TournamentState> corrupt, string message)
 }
 Invalid(s => s.Players = null!, "null seznam hráčů");
 Invalid(s => s.Players[0] = null!, "null hráč");
-Invalid(s => s.Players.Add(new Player("X", "p0")), "duplicitní přezdívka");
-Invalid(s => s.Players[0] = new Player("", "P0"), "prázdné jméno hráče");
-Invalid(s => s.Players[0] = new Player("X", " P0 "), "neoříznutá přezdívka");
+Invalid(s => s.Players.Add(new projekt_pva_2.Player("X", "p0")), "duplicitní přezdívka");
+Invalid(s => s.Players[0] = new projekt_pva_2.Player("", "P0"), "prázdné jméno hráče");
+Invalid(s => s.Players[0] = new projekt_pva_2.Player("X", " P0 "), "neoříznutá přezdívka");
 Invalid(s => s.Tournaments = null!, "null seznam turnajů");
 Invalid(s => s.Tournaments[0] = null!, "null turnaj");
 Invalid(s => s.Tournaments[0].Id = 3, "mezera v ID");
@@ -247,7 +247,7 @@ table = tie.GetStandings();
 Check(table.Select(x => x.Nickname).SequenceEqual(new[] { "P2", "P0", "P3", "P1" }), "Při shodě bodů rozhodují soupeři.");
 Check(table.Single(x => x.Nickname == "P0").OpponentPoints == 2.5m && table.Single(x => x.Nickname == "P3").OpponentPoints == 1.5m, "Síla soupeřů používá jejich aktuální celkové body.");
 Reject(() => tie.SetResult(1, MatchResult.Draw), "starý zápas v novém otevřeném kole");
-Invalid(s => s.Players[0] = new Player("X", null!), "null přezdívka hráče");
+Invalid(s => s.Players[0] = new projekt_pva_2.Player("X", null!), "null přezdívka hráče");
 Invalid(s => s.Tournaments[0].Participants[0] = null!, "null přezdívka účastníka");
 InvalidStarted(t => t.Rounds[0].Matches[0].SecondNickname = null!, "null soupeř");
 InvalidStarted(t => t.Rounds[0].Matches[0].SecondNickname = "missing", "osiřelý soupeř");

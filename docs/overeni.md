@@ -16,9 +16,9 @@ Skript sestaví hlavní i samostatný UI projekt v obou pořadích a spustí tř
 | --- | --- |
 | `verification/StorageChecks` | 50 kontrol vlastního formátu, znaků, duplicit, poškození, verzí, záloh, chyb zápisu a konfliktů snímků. |
 | `verification/TournamentChecks` | 2 113 tvrzení o pravidlech, historii, izolaci stavu, ukládání a úplných rozpisech pro 2 až 15 účastníků. |
-| `verification/IntegrationChecks` | 10 scénářů ukládání a pokračování uprostřed kola, vstupů, menu, konkrétních výjimek, chyb souboru a souběžných instancí. |
+| `verification/IntegrationChecks` | 13 scénářů ukládání a pokračování uprostřed kola, vstupů, menu, konkrétních výjimek, chyb souboru a souběžných instancí. Zahrnují otevření prázdného stavu, konec vstupu a znovunačtení změn jiné instance. |
 
-Původní soubor `UI/UI.cs` obsahuje upozornění nullable `CS8625`. Jeho zdroj se při převzetí zachoval; upozornění nebrání sestavení. Kontroly a technické AI review nenahrazují přezkoušení jiným členem týmu.
+Převzaté soubory `UI/UI.cs` a prototyp `Match.cs` obsahují upozornění nullable a nepoužité pole. Upozornění nebrání sestavení; prototyp se ve správě turnaje nepoužívá. Kontroly a technické AI review nenahrazují přezkoušení jiným členem týmu.
 
 ## Doložení losování
 
@@ -36,6 +36,7 @@ Tyto kontroly jsou přímo v `verification/TournamentChecks/Program.cs`; nejde p
 ## Ruční přezkoušení jiným členem týmu
 
 - [ ] Zkontrolovat příslušné PR a akceptační kritéria ticketů.
+- [ ] Ve šipkovém menu vyzkoušet start bez turnaje, **Zpět / konec** a **Znovu načíst** po změně dat jinou instancí. Zkontrolovat, že výpisy a chyby zůstanou viditelné do stisku klávesy.
 - [ ] Přidat hráče a zkusit duplicitní přezdívku s jinou velikostí písmen.
 - [ ] Vyzkoušet vstupy prázdné, textové a mimo rozsah.
 - [ ] Odehrát turnaj tří hráčů včetně opravy výsledku před uzavřením kola.
