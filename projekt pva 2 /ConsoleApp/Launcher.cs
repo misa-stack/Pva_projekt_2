@@ -6,7 +6,7 @@ public static class Launcher
 
     public static bool TryRunText(string[] args)
     {
-        bool textMode = Console.IsInputRedirected;
+        bool textMode = Console.IsInputRedirected || Console.IsOutputRedirected;
         for (int index = 0; index < args.Length; index++)
         {
             if (args[index] == "--text") textMode = true;
@@ -19,7 +19,7 @@ public static class Launcher
             }
         }
         if (!textMode) return false;
-        new TournamentConsole(SavePath).Run();
+        new TournamentConsole(SavePath, useArrowMenu: false).Run();
         return true;
     }
 }

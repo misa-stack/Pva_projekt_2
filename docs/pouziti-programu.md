@@ -6,7 +6,7 @@ Projekt potřebuje .NET SDK 10. Příkazy spouštějte z hlavní složky repozit
 dotnet run --project "projekt pva 2 /projekt pva 2.csproj"
 ```
 
-Původní startovací menu ovládáte šipkami a Enterem. Volba **play** otevře správu turnaje. V ní se volby zadávají číslem a potvrzují Enterem. Volba `0` správu ukončí.
+Startovací menu i správu turnaje ovládáte šipkami a Enterem. Volba **play** otevře správu turnaje i bez založeného turnaje. Po provedení operace, zobrazení chyby nebo znovunačtení dat pokračujete libovolnou klávesou. Volba **Zpět / konec** správu ukončí.
 
 Pro přímé spuštění číselného menu a vlastní umístění dat:
 
@@ -14,7 +14,9 @@ Pro přímé spuštění číselného menu a vlastní umístění dat:
 dotnet run --project "projekt pva 2 /projekt pva 2.csproj" -- --text --save "data/turnaj.pva"
 ```
 
-Bez `--save` se používá `data.pva` vedle sestavené aplikace. Parametr `--save` přijímá i úplnou cestu; relativní cesta vychází z pracovního adresáře. Při přesměrovaném vstupu se číselné menu použije automaticky.
+V textovém režimu se volby zadávají číslem a potvrzují Enterem; `0` správu ukončí. Následující číselný návod odpovídá stejnému pořadí položek ve šipkovém menu.
+
+Bez `--save` se používá `data.pva` vedle sestavené aplikace. Parametr `--save` přijímá i úplnou cestu; relativní cesta vychází z pracovního adresáře. Při přesměrovaném vstupu nebo výstupu se číselné menu použije automaticky.
 
 ## První turnaj
 
@@ -60,6 +62,6 @@ Prázdný vstup, text místo čísla a číslo mimo rozsah lze zadat znovu. Chyb
 
 Chybějící nový soubor se vytvoří. Při poškození se zkusí platná předchozí záloha `.bak`; ta obsahuje předchozí uložený stav. Když soubor nejde otevřít nebo obsahuje neplatná turnajová data, můžete zadat jinou cestu, nebo `0` pro návrat. Nepodporovaná verze se automaticky nepřepisuje.
 
-Při konfliktu dvou otevřených instancí se zastaralá změna odmítne. Volbou `15` načtěte aktuální stav a zadejte změnu znovu. Při selhání zápisu program neohlásí úspěšné uložení.
+Při konfliktu dvou otevřených instancí se zastaralá změna odmítne. Volbou **Znovu načíst** (`15` v textovém režimu) načtěte aktuální stav a zadejte změnu znovu. Úspěšné načtení se potvrdí zprávou. Při selhání zápisu program neohlásí úspěšné uložení.
 
 Původní soubory založené na JSON nejsou novým formátem. Uchovejte si jejich kopii a zvolte nový `.pva` soubor; program je nepřevede pomocí JSON knihovny. Podrobnosti samotné ukládací třídy jsou v [návodu FileSystem](pouziti-filesystem.md).
