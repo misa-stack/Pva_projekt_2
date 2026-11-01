@@ -4,19 +4,23 @@ using static System.Console;
 class Menu
 {
     private string[] Options;
-    private string Prompt;
+    private Func<string> Prompt;
 
     private int SelectedIndex;
-    public Menu(string Prompt = "", string[] Options = null)
+    public Menu(Func<string> Prompt, string[] Options = null)
     {
         this.Prompt = Prompt;
         this.Options = Options;
         this.SelectedIndex = 0;
     }
+    public Menu(string Prompt, string[] Options = null)
+        : this(() => Prompt, Options)
+    {
+    }
 
     private void DisplayOptions()
     {
-        Console.WriteLine(Prompt);
+        Console.WriteLine(Prompt());
         ResetColor();
         for (int i = 0; i < Options.Length; i++)
         {

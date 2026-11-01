@@ -1,4 +1,4 @@
-
+3
 Hlavním uživatelem programu je pořadatel školního turnaje. Hráči hrají mimo program a pořadatel zadává jejich výsledky.
 
 ## Správa hráčů
