@@ -10,7 +10,7 @@ bash verification/verify.sh
 
 - `StorageChecks`: 50 kontrol skutečných dočasných souborů, vlastního formátu, poškození, záloh a konfliktů zápisů.
 - `TournamentChecks`: 2 113 tvrzení o hráčích, turnajích, losování, výsledcích a tabulce.
-- `IntegrationChecks`: 10 scénářů propojení programu, ukládání, vstupů a konkrétních výjimek.
+- `IntegrationChecks`: 13 scénářů propojení programu, ukládání, vstupů a konkrétních výjimek, včetně prázdného stavu, konce vstupu a znovunačtení změn jiné instance.
 - `build-projects.sh`: sestavení hlavního i UI projektu v obou pořadích.
 
 Kontroly nepoužívají testovací balíčky, JSON ani XML. Pomocný otisk v `TournamentChecks` porovnává hodnoty stavu před a po operaci pomocí obyčejných řetězců; není to formát ukládání aplikace.

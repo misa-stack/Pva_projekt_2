@@ -6,6 +6,30 @@ Directory.CreateDirectory(root);
 int passed = 0;
 try
 {
+    Run("Console opens an empty save and exits without terminal input", () =>
+    {
+        var path = Path.Combine(root, "empty-console.pva");
+        var output = new StringWriter();
+        new TournamentConsole(path, new StringReader("0\n"), output).Run();
+        Equal(0, new TournamentStore(path).Load().Players.Count);
+        Check(output.ToString().Contains("Žádný otevřený turnaj"), "Empty state was not displayed.");
+    });
+    Run("Console exits cleanly at end of redirected input", () =>
+    {
+        new TournamentConsole(Path.Combine(root, "eof.pva"), new StringReader(""), new StringWriter()).Run();
+    });
+    Run("Reload displays changes saved by another instance", () =>
+    {
+        var path = Path.Combine(root, "console-reload.pva");
+        var output = new StringWriter();
+        var input = new ReloadInput(() =>
+        {
+            var otherStore = new TournamentStore(path);
+            new TournamentService(otherStore.Load(), otherStore.Save).AddPlayer("Anna", "anna");
+        });
+        new TournamentConsole(path, input, output).Run();
+        Check(output.ToString().Contains("anna: Anna"), "Reload did not display the externally added player.");
+    });
     Run("Complete state round trip and resume mid-round", () =>
     {
         var path = Path.Combine(root, "resume.pva");
@@ -160,4 +184,20 @@ static void Throws<T>(Action action) where T : Exception
     try { action(); }
     catch (T) { return; }
     throw new Exception($"Expected {typeof(T).Name}.");
+}
+
+sealed class ReloadInput(Action beforeReload) : TextReader
+{
+    private int line;
+
+    public override string? ReadLine()
+    {
+        switch (line++)
+        {
+            case 0: beforeReload(); return "15";
+            case 1: return "1";
+            case 2: return "0";
+            default: return null;
+        }
+    }
 }

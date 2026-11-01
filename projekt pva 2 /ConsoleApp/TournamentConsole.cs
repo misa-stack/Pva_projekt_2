@@ -4,13 +4,24 @@ public sealed class TournamentConsole
 {
     private readonly TextWriter output;
     private readonly InputReader input;
+    private readonly bool useArrowMenu;
     private string savePath;
 
-    public TournamentConsole(string savePath, TextReader? input = null, TextWriter? output = null)
+    private static readonly string[] Options =
+    [
+        "Hráči", "Přidat hráče", "Odebrat hráče", "Založit turnaj",
+        "Přihlásit", "Odhlásit", "Účastníci", "Spustit kolo",
+        "Zápasy", "Zadat/opravit výsledek", "Uzavřít kolo", "Tabulka",
+        "Historie turnajů", "Upravit počet kol", "Znovu načíst", "Zpět / konec"
+    ];
+
+    public TournamentConsole(string savePath, TextReader? input = null, TextWriter? output = null, bool useArrowMenu = true)
     {
         this.savePath = savePath;
         this.output = output ?? Console.Out;
         this.input = new InputReader(input ?? Console.In, this.output);
+        this.useArrowMenu = useArrowMenu && input is null && output is null
+            && !Console.IsInputRedirected && !Console.IsOutputRedirected;
     }
 
     public void Run()
@@ -19,20 +30,15 @@ public sealed class TournamentConsole
         if (service is null) return;
         while (true)
         {
-            var current = service.State.CurrentTournament;
-            output.WriteLine();
-            output.WriteLine(current is null ? "Žádný otevřený turnaj." :
-                $"Turnaj: {current.Name} | {current.Discipline} | kola {current.Rounds.Count}/{current.NumberOfRounds} | {(current.IsFinished ? "dokončen" : "rozpracován")}");
-            output.WriteLine("1 Hráči | 2 Přidat hráče | 3 Odebrat hráče | 4 Založit turnaj");
-            output.WriteLine("5 Přihlásit | 6 Odhlásit | 7 Účastníci | 8 Spustit kolo");
-            output.WriteLine("9 Zápasy | 10 Zadat/opravit výsledek | 11 Uzavřít kolo | 12 Tabulka");
-            output.WriteLine("13 Historie turnajů | 14 Upravit počet kol | 15 Znovu načíst | 0 Zpět / konec");
-            int? choice = input.ReadInt("Volba: ", 0, 15);
+            int? choice = ReadChoice(service);
             if (choice is null or 0) return;
+            if (useArrowMenu) Console.Clear();
             if (choice == 15)
             {
                 service = Open();
                 if (service is null) return;
+                output.WriteLine("Data byla znovu načtena.");
+                Pause();
                 continue;
             }
             try { Execute(choice.Value, service); }
@@ -41,7 +47,40 @@ public sealed class TournamentConsole
             {
                 output.WriteLine("Chyba: " + error.Message);
             }
+            Pause();
         }
+    }
+
+    private int? ReadChoice(TournamentService service)
+    {
+        string BuildPrompt()
+        {
+            var tournament = service.State.CurrentTournament;
+            return tournament is null ? "Žádný otevřený turnaj." :
+                $"Turnaj: {tournament.Name} | {tournament.Discipline} | kola {tournament.Rounds.Count}/{tournament.NumberOfRounds} | {(tournament.IsFinished ? "dokončen" : "rozpracován")}";
+        }
+
+        if (useArrowMenu)
+        {
+            int index = new UI.Menu(BuildPrompt, Options).Run();
+            return index == Options.Length - 1 ? 0 : index + 1;
+        }
+
+        output.WriteLine();
+        output.WriteLine(BuildPrompt());
+        for (int index = 0; index < Options.Length; index++)
+        {
+            int command = index == Options.Length - 1 ? 0 : index + 1;
+            output.WriteLine($"{command} {Options[index]}");
+        }
+        return input.ReadInt("Volba: ", 0, 15);
+    }
+
+    private void Pause()
+    {
+        if (!useArrowMenu) return;
+        output.WriteLine("Pokračujte libovolnou klávesou.");
+        Console.ReadKey(intercept: true);
     }
 
     private TournamentService? Open()
